@@ -1,7 +1,8 @@
 PHPModernizr
 ============
 
-A library of commonly used built-in PHP functions and global constants not available on old PHP versions.
+A server-side modernizr library that gives the abiility to use last built-in PHP functions on old PHP versions.
+Can be helpful to work on old PHP 4 servers.
 
 - array_combine()
 - array_diff_uassoc()

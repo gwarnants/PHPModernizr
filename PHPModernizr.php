@@ -347,7 +347,7 @@ if (!function_exists('image_type_to_extension')) {
             IMAGETYPE_SWC     => 'swc',
             IMAGETYPE_IFF     => 'aiff',
             IMAGETYPE_WBMP    => 'wbmp',
-            IMAGETYPE_XBM7     => 'xbm'
+            IMAGETYPE_XBM7    => 'xbm'
         );
         return isset($map[$imagetype]) ? ($include_dot?'.':'').$map[$imagetype] : false;
     }
