@@ -371,12 +371,13 @@ if (!function_exists('array_walk_recursive')) {
             return;
         }
 
-        foreach ($input as $k => &$v) {
+        foreach ($input as $k => $v) {
             if ($num_args == 2) {
                 is_array($v) ? array_walk_recursive($v, $funcname) : $funcname($v, $k);
             } else {
                 is_array($v) ? array_walk_recursive($v, $funcname, $userdata) : $funcname($v, $k, $userdata);
             }
+            $input[$k] = $v;
         }
 
         return true;
