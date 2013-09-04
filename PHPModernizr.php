@@ -4,7 +4,7 @@
  * Makes most of last released built-in PHP functions works on old PHP versions.
  *
  * @author  Geoffray Warnants
- * @version 1.0.20130819
+ * @version 1.1.20130904
  * @see     https://github.com/gwarnants/PHPModernizr
  */
 
@@ -15,6 +15,38 @@
 //
 // ----------------------------------------------------------------------------
 
+
+if (!function_exists('array_column')) {
+    /**
+     * Return the values from a single column in the input array
+     *
+     * @param   array $input
+     * @param   mixed $column_key
+     * @param   mixed $index_key
+     * @return  array
+     * @since   PHP 5.5.0
+     * @see     http://php.net/manual/en/function.array-column.php
+     */
+    function array_column($input, $column_key, $index_key=null) {
+        if (!is_array($input)) {
+            trigger_error(__FUNCTION__.'() Argument #1 is not an array', E_USER_WARNING);
+            return;
+        }
+        $array = array();
+        foreach ($input as $k => $v) {
+            if ($index_key !== null && array_key_exists($index_key, $v)) {
+                $array[$v[$index_key]] = ($column_key===null) ? $v
+                                       : (isset($v[$column_key]) ? $v[$column_key]
+                                       : null);
+            } else {
+                $array[] = ($column_key===null) ? $v
+                         : (isset($v[$column_key]) ? $v[$column_key]
+                         : null);
+            }
+        }
+        return $array;
+    }
+}
 
 if (!function_exists('array_combine')) {
     /**
@@ -251,6 +283,103 @@ if (!function_exists('array_fill_keys')) {
             $filled[$k] = $value;
         }
         return $value;
+    }
+}
+
+if (!function_exists('array_replace')) {
+    /**
+     * Replaces elements from passed arrays into the first array
+     *
+     * @param   array   $array
+     * @param   array   ...
+     * @return  array
+     * @since   PHP 5.3.0
+     * @see     http://php.net/manual/en/function.array-replace.php
+     */
+    function array_replace($array, $array1) {
+        if (($num_args=func_num_args()) == 0) {
+            trigger_error(__FUNCTION__.'() expects at least 1 parameter, 0 given', E_USER_WARNING);
+            return;
+        } elseif (!is_array($array)) {
+            trigger_error(__FUNCTION__.'() Argument #1 is not an array', E_USER_WARNING);
+            return;
+        }
+
+        for ($i=1; $i<$num_args; $i++) {
+            foreach (func_get_arg($i) as $k => $v) {
+                $array[$k] = $v;
+            }
+        }
+
+        return $array;
+    }
+}
+
+if (!function_exists('array_replace_recursive')) {
+    /**
+     * Replaces elements from passed arrays into the first array recursively
+     *
+     * @param   array   $array
+     * @param   array   ...
+     * @return  array
+     * @since   PHP 5.3.0
+     * @see     http://php.net/manual/en/function.array-replace-recursive.php
+     */
+    function array_replace_recursive($array, $array1) {
+        if (($num_args=func_num_args()) == 0) {
+            trigger_error(__FUNCTION__.'() expects at least 1 parameter, 0 given', E_USER_WARNING);
+            return;
+        } elseif (!is_array($array)) {
+            trigger_error(__FUNCTION__.'() Argument #1 is not an array', E_USER_WARNING);
+            return;
+        }
+
+        for ($i=1; $i<$num_args; $i++) {
+            foreach (func_get_arg($i) as $k => $v) {
+                if (isset($array[$k]) && is_array($array[$k]) && is_array($v)) {
+                    $array[$k] = array_replace_recursive($array[$k], $v);
+                } else {
+                    $array[$k] = $v;
+                }
+            }
+        }
+
+        return $array;
+    }
+}
+
+if (!function_exists('array_walk_recursive')) {
+    /**
+     * Apply a user function recursively to every member of an array
+     *
+     * @param   array       $input
+     * @param   callback    $funcname
+     * @param   mixed       $userdata
+     * @return  bool
+     * @since   PHP 5
+     * @see     http://php.net/manual/en/function.array-walk-recursive.php
+     */
+    function array_walk_recursive(&$input, $funcname, $userdata=null) {
+        if (($num_args = func_num_args()) < 2) {
+            trigger_error(__FUNCTION__.'() expects at least 2 parameters, '.$num_args.' given', E_USER_WARNING);
+            return;
+        } elseif (!is_array($input)) {
+            trigger_error(__FUNCTION__.'() expects parameter 1 to be array, '.gettype($input).' given in', E_USER_WARNING);
+            return;
+        } elseif (!is_callable($funcname)) {
+            trigger_error(__FUNCTION__.'() parameter 2 to be a valid callback', E_USER_WARNING);
+            return;
+        }
+
+        foreach ($input as $k => &$v) {
+            if ($num_args == 2) {
+                is_array($v) ? array_walk_recursive($v, $funcname) : $funcname($v, $k);
+            } else {
+                is_array($v) ? array_walk_recursive($v, $funcname, $userdata) : $funcname($v, $k, $userdata);
+            }
+        }
+
+        return true;
     }
 }
 
@@ -659,6 +788,123 @@ if (!function_exists('scandir')) {
             }
         }
         return $files;
+    }
+}
+
+
+// ----------------------------------------------------------------------------
+//
+// network
+//
+// ----------------------------------------------------------------------------
+
+
+if (!function_exists('gethostname')) {
+    /**
+     * Gets the host name
+     *
+     * @return  string
+     * @see     http://php.net/manual/en/function.gethostname.php
+     * @since   PHP 5.3.0
+     */
+    function gethostname() {
+        return php_uname('n');
+    }
+}
+
+if (!function_exists('headers_list')) {
+    /**
+     * Returns a list of response headers sent (or ready to send)
+     *
+     * @return  array
+     * @since   PHP 5
+     * @see     http://php.net/manual/en/function.headers-list.php
+     */
+    function headers_list() {
+        $all_functions = get_defined_functions();
+        if (in_array('apache_response_headers', $all_functions['internal'])) {
+            $headers = array();
+            foreach (apache_response_headers() as $name => $header) {
+                $headers[] = $name.': '.$header;
+            }
+            return $headers;
+        } else {
+            return array();
+        }
+    }
+}
+
+if (!function_exists('header_remove')) {
+    /**
+     * Remove previously set headers
+     *
+     * @param   string  $name
+     * @return  void
+     * @since   PHP 5.3.0
+     * @see     http://php.net/manual/en/function.header-remove.php
+     */
+    function header_remove($name='') {
+        if ($name != '') {
+            header($name.':');
+        } else {
+            foreach (array_keys(apache_response_headers()) as $n) {
+                header($n.':');
+            }
+        }
+    }
+}
+
+if (!function_exists('apache_response_headers')) {
+    /**
+     * Fetch all HTTP response headers
+     *
+     * @return  array
+     * @since   PHP 4.3.0 (but may not exists on != Apache webservers)
+     * @see     http://php.net/manual/en/function.apache-response-headers.php
+     */
+    function apache_response_headers() {
+        $all_functions = get_defined_functions();
+        if (in_array('headers_list', $all_functions['internal'])) {
+            $headers = array();
+            foreach (headers_list() as $header) {
+                $split = explode(':', $header, 2);
+                $headers[$split[0]] = ltrim($split[1]);
+            }
+            return $headers;
+        } else {
+            return false;
+        }
+    }
+}
+
+
+// ----------------------------------------------------------------------------
+//
+// mysqli
+//
+// ----------------------------------------------------------------------------
+
+
+if (!function_exists('mysqli_fetch_all') && extension_loaded('mysqli')) {
+    /**
+     * Fetches all result rows as an associative array, a numeric array, or both
+     *
+     * @param   mysqli_result   $result
+     * @param   int             $resulttype
+     * @return  array
+     * @since   PHP 5.3.0
+     * @see     http://php.net/manual/en/mysqli-result.fetch-all.php
+     */
+    function mysqli_fetch_all($result, $resulttype=MYSQLI_NUM) {
+        if (!is_object($result) || get_class($result) != 'mysqli_result') {
+            trigger_error(__FUNCTION__.'() expects parameter 1 to be mysqli_result, '.gettype($result).' given in', E_USER_WARNING);
+            return;
+        }
+        $fetch = array();
+        while ($row = mysqli_fetch_array($result, $resulttype)) {
+            $fetch[] = $row;
+        }
+        return $fetch;
     }
 }
 
