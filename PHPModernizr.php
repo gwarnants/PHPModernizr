@@ -721,6 +721,35 @@ if (!function_exists('hex2bin')) {
     }
 }
 
+if (!function_exists('str_getcsv')) {
+    /**
+     * Parse a CSV string into an array
+     *
+     * @param   string  $input
+     * @param   string  $delimiter
+     * @param   string  $enclosure
+     * @param   string  $escape
+     * @return  array
+     * @since   PHP 5.3.0
+     * @see     http://php.net/manual/en/function.str-getcsv.php
+     */
+    function str_getcsv($input, $delimiter=',', $enclosure='"', $escape='\\') {
+        $csv = false;
+        if (version_compare(PHP_VERSION, '5.1.0') >= 0 && ($fd = fopen('php://temp', 'r+')) !== false) {
+            if (fwrite($fd, $input) > 0 && fseek($fd, 0)==0) {
+                $csv = fgetcsv($fd, strlen($input), $delimiter, $enclosure); // $escape parameter only added since PHP 5.3.0
+            }
+            fclose($fd);
+        } elseif (($fd=tmpfile()) !== false) {
+            if (fwrite($fd, $input) > 0 && fseek($fd, 0)==0) {
+                $csv = fgetcsv($fd, strlen($input), $delimiter, $enclosure);
+            }
+            fclose($fd);
+        }
+        return is_array($csv) ? $csv : array($input);
+    }
+}
+
 
 // ----------------------------------------------------------------------------
 //
