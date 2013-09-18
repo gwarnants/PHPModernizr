@@ -4,7 +4,7 @@
  * Makes most of last released built-in PHP functions works on old PHP versions.
  *
  * @author  Geoffray Warnants
- * @version 1.1.20130904
+ * @version 1.2.20130918
  * @see     https://github.com/gwarnants/PHPModernizr
  */
 
@@ -609,6 +609,25 @@ if (!function_exists('file_put_contents')) {
             return $written;
         }
         return false;
+    }
+}
+
+if (!function_exists('stream_resolve_include_path')) {
+    /**
+     * Resolve filename against the include path
+     *
+     * @param   string
+     * @return  string
+     * @since   PHP 5.3.2
+     * @see     http://php.net/manual/en/function.stream-resolve-include-path.php
+     */
+    function stream_resolve_include_path($filename) {
+        foreach (explode(PATH_SEPARATOR, ini_get('include_path')) as $path) {
+            if (file_exists(($file=rtrim($path, '/\\').DIRECTORY_SEPARATOR.$filename))) {
+                return $file;
+            }
+        }
+        return file_exists(($file=dirname(__FILE__).DIRECTORY_SEPARATOR.$filename)) ? $file : false;
     }
 }
 

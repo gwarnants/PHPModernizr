@@ -29,5 +29,6 @@ Can be helpful to work on old PHP 4 servers.
 - scandir()
 - str_getcsv()
 - str_split()
+- stream_resolve_include_path()
 - strpbrk()
 - substr_compare()
