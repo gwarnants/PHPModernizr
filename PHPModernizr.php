@@ -4,7 +4,7 @@
  * Makes most of last released built-in PHP functions works on old PHP versions.
  *
  * @author  Geoffray Warnants
- * @version 1.2.20130918
+ * @version 1.2.20130920
  * @see     https://github.com/gwarnants/PHPModernizr
  */
 
@@ -612,6 +612,45 @@ if (!function_exists('file_put_contents')) {
     }
 }
 
+// PHP 5.4
+if (!defined('SCANDIR_SORT_ASCENDING')) {
+    define('SCANDIR_SORT_ASCENDING', 0);
+}
+if (!defined('SCANDIR_SORT_DESCENDING')) {
+    define('SCANDIR_SORT_DESCENDING', 1);
+}
+if (!defined('SCANDIR_SORT_NONE')) {
+    define('SCANDIR_SORT_NONE', 2);
+}
+
+if (!function_exists('scandir')) {
+    /**
+     * List files and directories inside the specified path
+     *
+     * @param   string      $directory
+     * @param   int         $sorting_order
+     * @param   resource    $context
+     * @return  array
+     * @since   PHP 5
+     * @see     http://php.net/manual/en/function.scandir.php
+     */
+    function scandir($directory, $sorting_order=SCANDIR_SORT_ASCENDING, $context=null) {
+        $files = array();
+        if (($fd = call_user_func_array('opendir', (is_resource($context)) ? array($directory, $context) : array($directory))) !== false) {
+            while (($filename = readdir($fd)) !== false) {
+                $files[] = $filename;
+            }
+            closedir($fd);
+            if ($sorting_order == SCANDIR_SORT_ASCENDING) {
+                sort($files);
+            } elseif ($sorting_order == SCANDIR_SORT_DESCENDING) {
+                rsort($files);
+            }
+        }
+        return $files;
+    }
+}
+
 if (!function_exists('stream_resolve_include_path')) {
     /**
      * Resolve filename against the include path
@@ -628,6 +667,25 @@ if (!function_exists('stream_resolve_include_path')) {
             }
         }
         return file_exists(($file=dirname(__FILE__).DIRECTORY_SEPARATOR.$filename)) ? $file : false;
+    }
+}
+
+if (!function_exists('sys_get_temp_dir')) {
+    /**
+     * Returns directory path used for temporary files
+     *
+     * @return  string
+     * @since   PHP 5.2.1
+     * @see     http://php.net/manual/en/function.sys-get-temp-dir.php
+     */
+    function sys_get_temp_dir() {
+        (($tmp_dir=(empty($_ENV['TMP']) ? '' : $_ENV['TMP'])) != ''
+            || ($tmp_dir=(empty($_ENV['TMPDIR']) ? '' : $_ENV['TMPDIR'])) != ''
+            || ($tmp_dir=(empty($_ENV['TEMP']) ? '' : $_ENV['TEMP'])) != ''
+            || (preg_match('/^WIN/i', PHP_OS) && ($tmp_dir=(is_dir('C:\Windows\Temp')?'C:\Windows\Temp':'')) != '')
+            || ($tmp_dir=ini_get('upload_tmp_dir')) != ''
+            || ($tmp_dir=ini_get('session.save_path')) != '');
+        return $tmp_dir;
     }
 }
 
@@ -769,6 +827,34 @@ if (!function_exists('str_getcsv')) {
     }
 }
 
+if (!function_exists('parse_ini_string')) {
+    /**
+     * Parse a configuration string
+     *
+     * @param   string  $ini
+     * @param   bool    $process_sections
+     * @param   int     $scanner_mode
+     * @return  array
+     * @since   PHP 5.3.0
+     * @see     http://php.net/manual/en/function.parse-ini-string.php
+     */
+    function parse_ini_string($ini, $process_sections=false, $scanner_mode=INI_SCANNER_NORMAL) {
+
+        $prefix = substr(str_shuffle('abcdefghijklmnopqrstuvwxyz0123456789_'), 0, preg_match('/^WIN/i', PHP_OS) ? 3 : 8);
+
+        if (($tempfile = tempnam(sys_get_temp_dir(), $prefix)) !== false) {
+            if (($fd=fopen($tempfile, 'w')) !== false) {
+                fwrite($fd, $ini);
+                fclose($fd);
+                return parse_ini_file($tempfile, $process_sections, $scanner_mode);
+            }
+            unlink($tempfile);
+        }
+
+        return false;
+    }
+}
+
 
 // ----------------------------------------------------------------------------
 //
@@ -796,53 +882,6 @@ if (!defined('E_USER_DEPRECATED')) {
 
 // ----------------------------------------------------------------------------
 //
-// directories
-//
-// ----------------------------------------------------------------------------
-
-
-// PHP 5.4
-if (!defined('SCANDIR_SORT_ASCENDING')) {
-    define('SCANDIR_SORT_ASCENDING', 0);
-}
-if (!defined('SCANDIR_SORT_DESCENDING')) {
-    define('SCANDIR_SORT_DESCENDING', 1);
-}
-if (!defined('SCANDIR_SORT_NONE')) {
-    define('SCANDIR_SORT_NONE', 2);
-}
-
-if (!function_exists('scandir')) {
-    /**
-     * List files and directories inside the specified path
-     *
-     * @param   string      $directory
-     * @param   int         $sorting_order
-     * @param   resource    $context
-     * @return  array
-     * @since   PHP 5
-     * @see     http://php.net/manual/en/function.scandir.php
-     */
-    function scandir($directory, $sorting_order=SCANDIR_SORT_ASCENDING, $context=null) {
-        $files = array();
-        if (($fd = call_user_func_array('opendir', (is_resource($context)) ? array($directory, $context) : array($directory))) !== false) {
-            while (($filename = readdir($fd)) !== false) {
-                $files[] = $filename;
-            }
-            closedir($fd);
-            if ($sorting_order == SCANDIR_SORT_ASCENDING) {
-                sort($files);
-            } elseif ($sorting_order == SCANDIR_SORT_DESCENDING) {
-                rsort($files);
-            }
-        }
-        return $files;
-    }
-}
-
-
-// ----------------------------------------------------------------------------
-//
 // network
 //
 // ----------------------------------------------------------------------------
@@ -853,8 +892,8 @@ if (!function_exists('gethostname')) {
      * Gets the host name
      *
      * @return  string
-     * @see     http://php.net/manual/en/function.gethostname.php
      * @since   PHP 5.3.0
+     * @see     http://php.net/manual/en/function.gethostname.php
      */
     function gethostname() {
         return php_uname('n');
