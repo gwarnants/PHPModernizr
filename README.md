@@ -4,6 +4,12 @@ PHPModernizr
 A server-side modernizr library that gives the ability to use last built-in PHP functions on old PHP versions.
 Can be helpful to work on old PHP 4 servers.
 
+```php
+include 'PHPModernizr.php';
+```
+
+Juste include the library and get ready to use all theses brand-new functions regardless of your PHP configuration :
+
 - apache_response_headers()
 - array_column()
 - array_combine()
