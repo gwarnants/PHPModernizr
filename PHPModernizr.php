@@ -4,7 +4,7 @@
  * Makes most of last released built-in PHP functions works on old PHP versions.
  *
  * @author  Geoffray Warnants
- * @version 1.2.20130920
+ * @version 1.0.20130921
  * @see     https://github.com/gwarnants/PHPModernizr
  */
 
@@ -123,6 +123,87 @@ if (!function_exists('array_diff_uassoc')) {
         }
 
         return $diff;
+    }
+}
+
+if (!function_exists('array_fill_keys')) {
+    /**
+     * Fill an array with values, specifying keys
+     *
+     * @param   array   $keys
+     * @param   array   $value
+     * @return  array
+     * @since   PHP 5.2.0
+     * @see     http://php.net/manual/en/function.array-fill-keys.php
+     */
+    function array_fill_keys($keys, $value) {
+        $filled = array();
+        foreach ($keys as $k) {
+            $filled[$k] = $value;
+        }
+        return $value;
+    }
+}
+
+if (!function_exists('array_replace')) {
+    /**
+     * Replaces elements from passed arrays into the first array
+     *
+     * @param   array   $array
+     * @param   array   ...
+     * @return  array
+     * @since   PHP 5.3.0
+     * @see     http://php.net/manual/en/function.array-replace.php
+     */
+    function array_replace($array, $array1) {
+        if (($num_args=func_num_args()) == 0) {
+            trigger_error(__FUNCTION__.'() expects at least 1 parameter, 0 given', E_USER_WARNING);
+            return;
+        } elseif (!is_array($array)) {
+            trigger_error(__FUNCTION__.'() Argument #1 is not an array', E_USER_WARNING);
+            return;
+        }
+
+        for ($i=1; $i<$num_args; $i++) {
+            foreach (func_get_arg($i) as $k => $v) {
+                $array[$k] = $v;
+            }
+        }
+
+        return $array;
+    }
+}
+
+if (!function_exists('array_replace_recursive')) {
+    /**
+     * Replaces elements from passed arrays into the first array recursively
+     *
+     * @param   array   $array
+     * @param   array   ...
+     * @return  array
+     * @since   PHP 5.3.0
+     * @see     http://php.net/manual/en/function.array-replace-recursive.php
+     */
+    function array_replace_recursive($array, $array1) {
+        if (($num_args=func_num_args()) == 0) {
+            trigger_error(__FUNCTION__.'() expects at least 1 parameter, 0 given', E_USER_WARNING);
+            return;
+        } elseif (!is_array($array)) {
+            trigger_error(__FUNCTION__.'() Argument #1 is not an array', E_USER_WARNING);
+            return;
+        }
+
+        for ($i=1; $i<$num_args; $i++) {
+            foreach (func_get_arg($i) as $k => $v) {
+                if (isset($array[$k]) && is_array($array[$k]) && is_array($v)) {
+                    $array[$k] = array_replace_recursive($array[$k], $v);
+                } else {
+                    $array[$k] = $v;
+                }
+            }
+        }
+
+        return $array;
     }
 }
 
@@ -264,87 +345,6 @@ if (!function_exists('array_udiff_uassoc')) {
         }
 
         return $diff;
-    }
-}
-
-if (!function_exists('array_fill_keys')) {
-    /**
-     * Fill an array with values, specifying keys
-     *
-     * @param   array   $keys
-     * @param   array   $value
-     * @return  array
-     * @since   PHP 5.2.0
-     * @see     http://php.net/manual/en/function.array-fill-keys.php
-     */
-    function array_fill_keys($keys, $value) {
-        $filled = array();
-        foreach ($keys as $k) {
-            $filled[$k] = $value;
-        }
-        return $value;
-    }
-}
-
-if (!function_exists('array_replace')) {
-    /**
-     * Replaces elements from passed arrays into the first array
-     *
-     * @param   array   $array
-     * @param   array   ...
-     * @return  array
-     * @since   PHP 5.3.0
-     * @see     http://php.net/manual/en/function.array-replace.php
-     */
-    function array_replace($array, $array1) {
-        if (($num_args=func_num_args()) == 0) {
-            trigger_error(__FUNCTION__.'() expects at least 1 parameter, 0 given', E_USER_WARNING);
-            return;
-        } elseif (!is_array($array)) {
-            trigger_error(__FUNCTION__.'() Argument #1 is not an array', E_USER_WARNING);
-            return;
-        }
-
-        for ($i=1; $i<$num_args; $i++) {
-            foreach (func_get_arg($i) as $k => $v) {
-                $array[$k] = $v;
-            }
-        }
-
-        return $array;
-    }
-}
-
-if (!function_exists('array_replace_recursive')) {
-    /**
-     * Replaces elements from passed arrays into the first array recursively
-     *
-     * @param   array   $array
-     * @param   array   ...
-     * @return  array
-     * @since   PHP 5.3.0
-     * @see     http://php.net/manual/en/function.array-replace-recursive.php
-     */
-    function array_replace_recursive($array, $array1) {
-        if (($num_args=func_num_args()) == 0) {
-            trigger_error(__FUNCTION__.'() expects at least 1 parameter, 0 given', E_USER_WARNING);
-            return;
-        } elseif (!is_array($array)) {
-            trigger_error(__FUNCTION__.'() Argument #1 is not an array', E_USER_WARNING);
-            return;
-        }
-
-        for ($i=1; $i<$num_args; $i++) {
-            foreach (func_get_arg($i) as $k => $v) {
-                if (isset($array[$k]) && is_array($array[$k]) && is_array($v)) {
-                    $array[$k] = array_replace_recursive($array[$k], $v);
-                } else {
-                    $array[$k] = $v;
-                }
-            }
-        }
-
-        return $array;
     }
 }
 
@@ -696,6 +696,106 @@ if (!function_exists('sys_get_temp_dir')) {
 //
 // ----------------------------------------------------------------------------
 
+if (!function_exists('hex2bin')) {
+    /**
+     * Decodes a hexadecimally encoded binary string
+     *
+     * @param   string  $data
+     * @return  string
+     * @since   PHP 5.4.0
+     * @see     http://php.net/manual/en/function.hex2bin.php
+     */
+    function hex2bin($data) {
+        return pack('H*', $data);
+    }
+}
+
+if (!function_exists('lcfirst')) {
+    /**
+     * Make a string's first character lowercase
+     *
+     * @param   string  $str
+     * @return  string
+     * @since   PHP 5.3.0
+     * @see     http://php.net/manual/en/function.lcfirst.php
+     */
+    function lcfirst($str) {
+        return isset($str[0]) ? strtolower($str[0]).substr($str, 1) : '';
+    }
+}
+
+if (!function_exists('parse_ini_string')) {
+    /**
+     * Parse a configuration string
+     *
+     * @param   string  $ini
+     * @param   bool    $process_sections
+     * @param   int     $scanner_mode
+     * @return  array
+     * @since   PHP 5.3.0
+     * @see     http://php.net/manual/en/function.parse-ini-string.php
+     */
+    function parse_ini_string($ini, $process_sections=false, $scanner_mode=INI_SCANNER_NORMAL) {
+
+        $prefix = substr(str_shuffle('abcdefghijklmnopqrstuvwxyz0123456789_'), 0, preg_match('/^WIN/i', PHP_OS) ? 3 : 8);
+
+        if (($tempfile = tempnam(sys_get_temp_dir(), $prefix)) !== false) {
+            if (($fd=fopen($tempfile, 'w')) !== false) {
+                fwrite($fd, $ini);
+                fclose($fd);
+                return parse_ini_file($tempfile, $process_sections, $scanner_mode);
+            }
+            unlink($tempfile);
+        }
+
+        return false;
+    }
+}
+
+if (!function_exists('str_getcsv')) {
+    /**
+     * Parse a CSV string into an array
+     *
+     * @param   string  $input
+     * @param   string  $delimiter
+     * @param   string  $enclosure
+     * @param   string  $escape
+     * @return  array
+     * @since   PHP 5.3.0
+     * @see     http://php.net/manual/en/function.str-getcsv.php
+     */
+    function str_getcsv($input, $delimiter=',', $enclosure='"', $escape='\\') {
+        $csv = false;
+        if (version_compare(PHP_VERSION, '5.1.0') >= 0 && ($fd = fopen('php://temp', 'r+')) !== false) {
+            if (fwrite($fd, $input) > 0 && fseek($fd, 0)==0) {
+                $csv = fgetcsv($fd, strlen($input), $delimiter, $enclosure); // $escape parameter only added since PHP 5.3.0
+            }
+            fclose($fd);
+        } elseif (($fd=tmpfile()) !== false) {
+            if (fwrite($fd, $input) > 0 && fseek($fd, 0)==0) {
+                $csv = fgetcsv($fd, strlen($input), $delimiter, $enclosure);
+            }
+            fclose($fd);
+        }
+        return is_array($csv) ? $csv : array($input);
+    }
+}
+
+if (!function_exists('str_shuffle')) {
+    /**
+     * Randomly shuffles a string
+     *
+     * @param   string  $str
+     * @return  string
+     * @since   PHP 4.3.0
+     * @see     http://php.net/manual/en/function.str-shuffle.php
+     */
+    function str_shuffle($str) {
+        $array = str_split($str);
+        shuffle($array);
+        return implode('', $array);
+    }
+}
 
 if (!function_exists('str_split')) {
     /**
@@ -770,91 +870,6 @@ if (!function_exists('substr_compare')) {
     }
 }
 
-if (!function_exists('lcfirst')) {
-    /**
-     * Make a string's first character lowercase
-     *
-     * @param   string  $str
-     * @return  string
-     * @since   PHP 5.3.0
-     * @see     http://php.net/manual/en/function.lcfirst.php
-     */
-    function lcfirst($str) {
-        return isset($str[0]) ? strtolower($str[0]).substr($str, 1) : '';
-    }
-}
-
-if (!function_exists('hex2bin')) {
-    /**
-     * Decodes a hexadecimally encoded binary string
-     *
-     * @param   string  $data
-     * @return  string
-     * @since   PHP 5.4.0
-     * @see     http://php.net/manual/en/function.hex2bin.php
-     */
-    function hex2bin($data) {
-        return pack('H*', $data);
-    }
-}
-
-if (!function_exists('str_getcsv')) {
-    /**
-     * Parse a CSV string into an array
-     *
-     * @param   string  $input
-     * @param   string  $delimiter
-     * @param   string  $enclosure
-     * @param   string  $escape
-     * @return  array
-     * @since   PHP 5.3.0
-     * @see     http://php.net/manual/en/function.str-getcsv.php
-     */
-    function str_getcsv($input, $delimiter=',', $enclosure='"', $escape='\\') {
-        $csv = false;
-        if (version_compare(PHP_VERSION, '5.1.0') >= 0 && ($fd = fopen('php://temp', 'r+')) !== false) {
-            if (fwrite($fd, $input) > 0 && fseek($fd, 0)==0) {
-                $csv = fgetcsv($fd, strlen($input), $delimiter, $enclosure); // $escape parameter only added since PHP 5.3.0
-            }
-            fclose($fd);
-        } elseif (($fd=tmpfile()) !== false) {
-            if (fwrite($fd, $input) > 0 && fseek($fd, 0)==0) {
-                $csv = fgetcsv($fd, strlen($input), $delimiter, $enclosure);
-            }
-            fclose($fd);
-        }
-        return is_array($csv) ? $csv : array($input);
-    }
-}
-
-if (!function_exists('parse_ini_string')) {
-    /**
-     * Parse a configuration string
-     *
-     * @param   string  $ini
-     * @param   bool    $process_sections
-     * @param   int     $scanner_mode
-     * @return  array
-     * @since   PHP 5.3.0
-     * @see     http://php.net/manual/en/function.parse-ini-string.php
-     */
-    function parse_ini_string($ini, $process_sections=false, $scanner_mode=INI_SCANNER_NORMAL) {
-
-        $prefix = substr(str_shuffle('abcdefghijklmnopqrstuvwxyz0123456789_'), 0, preg_match('/^WIN/i', PHP_OS) ? 3 : 8);
-
-        if (($tempfile = tempnam(sys_get_temp_dir(), $prefix)) !== false) {
-            if (($fd=fopen($tempfile, 'w')) !== false) {
-                fwrite($fd, $ini);
-                fclose($fd);
-                return parse_ini_file($tempfile, $process_sections, $scanner_mode);
-            }
-            unlink($tempfile);
-        }
-
-        return false;
-    }
-}
-
 
 // ----------------------------------------------------------------------------
 //
@@ -887,6 +902,29 @@ if (!defined('E_USER_DEPRECATED')) {
 // ----------------------------------------------------------------------------
 
 
+if (!function_exists('apache_response_headers')) {
+    /**
+     * Fetch all HTTP response headers
+     *
+     * @return  array
+     * @since   PHP 4.3.0 (but may not exists on != Apache webservers)
+     * @see     http://php.net/manual/en/function.apache-response-headers.php
+     */
+    function apache_response_headers() {
+        $all_functions = get_defined_functions();
+        if (in_array('headers_list', $all_functions['internal'])) {
+            $headers = array();
+            foreach (headers_list() as $header) {
+                $split = explode(':', $header, 2);
+                $headers[$split[0]] = ltrim($split[1]);
+            }
+            return $headers;
+        } else {
+            return false;
+        }
+    }
+}
+
 if (!function_exists('gethostname')) {
     /**
      * Gets the host name
@@ -897,28 +935,6 @@ if (!function_exists('gethostname')) {
      */
     function gethostname() {
         return php_uname('n');
-    }
-}
-
-if (!function_exists('headers_list')) {
-    /**
-     * Returns a list of response headers sent (or ready to send)
-     *
-     * @return  array
-     * @since   PHP 5
-     * @see     http://php.net/manual/en/function.headers-list.php
-     */
-    function headers_list() {
-        $all_functions = get_defined_functions();
-        if (in_array('apache_response_headers', $all_functions['internal'])) {
-            $headers = array();
-            foreach (apache_response_headers() as $name => $header) {
-                $headers[] = $name.': '.$header;
-            }
-            return $headers;
-        } else {
-            return array();
-        }
     }
 }
 
@@ -942,25 +958,24 @@ if (!function_exists('header_remove')) {
     }
 }
 
-if (!function_exists('apache_response_headers')) {
+if (!function_exists('headers_list')) {
     /**
-     * Fetch all HTTP response headers
+     * Returns a list of response headers sent (or ready to send)
      *
      * @return  array
-     * @since   PHP 4.3.0 (but may not exists on != Apache webservers)
-     * @see     http://php.net/manual/en/function.apache-response-headers.php
+     * @since   PHP 5
+     * @see     http://php.net/manual/en/function.headers-list.php
      */
-    function apache_response_headers() {
+    function headers_list() {
         $all_functions = get_defined_functions();
-        if (in_array('headers_list', $all_functions['internal'])) {
+        if (in_array('apache_response_headers', $all_functions['internal'])) {
             $headers = array();
-            foreach (headers_list() as $header) {
-                $split = explode(':', $header, 2);
-                $headers[$split[0]] = ltrim($split[1]);
+            foreach (apache_response_headers() as $name => $header) {
+                $headers[] = $name.': '.$header;
             }
             return $headers;
         } else {
-            return false;
+            return array();
         }
     }
 }
