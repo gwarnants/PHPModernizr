@@ -878,18 +878,19 @@ if (!function_exists('substr_compare')) {
 // ----------------------------------------------------------------------------
 
 
-// PHP 5
+/** @since PHP 5 */
 if (!defined('E_STRICT')) {
     define('E_STRICT', 2048);
 }
-// PHP 5.2.0
+/** @since PHP 5.2.0 */
 if (!defined('E_RECOVERABLE_ERROR')) {
     define('E_RECOVERABLE_ERROR', 4096);
 }
-// PHP 5.3.0
+/** @since PHP 5.3.0 */
 if (!defined('E_DEPRECATED')) {
     define('E_DEPRECATED', 8192);
 }
+/** @since PHP 5.3.0 */
 if (!defined('E_USER_DEPRECATED')) {
     define('E_USER_DEPRECATED', 16384);
 }
@@ -1014,31 +1015,83 @@ if (!function_exists('mysqli_fetch_all') && extension_loaded('mysqli')) {
 
 // ----------------------------------------------------------------------------
 //
-// other
+// url
 //
 // ----------------------------------------------------------------------------
 
 
-// PHP 5.0.3
-if (!defined('UPLOAD_ERR_NO_TMP_DIR')) {
-    define('UPLOAD_ERR_NO_TMP_DIR', 6);
-}
-// PHP 5.1
-if (!defined('UPLOAD_ERR_CANT_WRITE')) {
-    define('UPLOAD_ERR_CANT_WRITE', 7);
-}
-// PHP 5.2
-if (!defined('UPLOAD_ERR_EXTENSION')) {
-    define('UPLOAD_ERR_EXTENSION', 8);
-}
-if (!defined('M_SQRTPI')) {
-    define('M_SQRTPI', sqrt(M_PI));
-}
 if (!defined('PHP_QUERY_RFC1738')) {
     define('PHP_QUERY_RFC1738', 1);
 }
 if (!defined('PHP_QUERY_RFC3986')) {
     define('PHP_QUERY_RFC3986', 2);
+}
+
+if (!function_exists('http_build_query')) {
+    /**
+     * Generate URL-encoded query string
+     *
+     * @param   mixed   $query_data
+     * @param   string  $numeric_prefix
+     * @param   string  $arg_separator
+     * @param   int     $enc_type
+     * @return  string
+     * @since   PHP 5
+     * @see     http://php.net/manual/en/function.http-build-query.php
+     */
+    function http_build_query($query_data, $numeric_prefix='', $arg_separator=null, $enc_type=PHP_QUERY_RFC1738)
+    {
+        if (!is_array($query_data) && !is_object($query_data)) {
+            trigger_error(__FUNCTION__.'() : Parameter 1 expected to be Array or Object. Incorrect value given', E_USER_WARNING);
+            return;
+        }
+        $encode = ($enc_type==PHP_QUERY_RFC3986) ? 'rawurlencode' : 'urlencode';
+
+        if ($arg_separator === null) {
+            $arg_separator = ini_get('arg_separator.output');
+        }
+
+        $query = '';
+        foreach ($query_data as $k => $v) {
+
+            if (is_array($v) || is_object($v)) {
+                $args2 = array();
+                foreach ($v as $k2 => $v2) {
+                    $args2[$k.'['.$k2.']'] = $v2;
+                }
+                $query .= $arg_separator.http_build_query($args2, '', $arg_separator, $enc_type);
+            } else {
+                $query .= $arg_separator.(is_numeric($k)?$numeric_prefix:'').$encode($k).'='.$encode($v);
+            }
+        }
+
+        return ($query != '') ? substr($query, strlen($arg_separator)) : '';
+    }
+}
+
+
+// ----------------------------------------------------------------------------
+//
+// other
+//
+// ----------------------------------------------------------------------------
+
+
+/** @since PHP 5.0.3 */
+if (!defined('UPLOAD_ERR_NO_TMP_DIR')) {
+    define('UPLOAD_ERR_NO_TMP_DIR', 6);
+}
+/** @since PHP 5.1 */
+if (!defined('UPLOAD_ERR_CANT_WRITE')) {
+    define('UPLOAD_ERR_CANT_WRITE', 7);
+}
+/** @since PHP 5.2 */
+if (!defined('UPLOAD_ERR_EXTENSION')) {
+    define('UPLOAD_ERR_EXTENSION', 8);
+}
+/** @since PHP 4.0.2 */
+if (!defined('M_SQRTPI')) {
+    define('M_SQRTPI', sqrt(M_PI));
 }
 
 /**
