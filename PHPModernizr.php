@@ -4,7 +4,7 @@
  * Makes most of last released built-in PHP functions works on old PHP versions.
  *
  * @author  Geoffray Warnants
- * @version 1.0.20130921
+ * @version 1.0.20130922
  * @see     https://github.com/gwarnants/PHPModernizr
  */
 
@@ -387,134 +387,258 @@ if (!function_exists('array_walk_recursive')) {
 
 // ----------------------------------------------------------------------------
 //
-// gd
+// ctype
+//
+// Before PHP 4.2.0 ctype functions were not enabled by default.
+// PHP had to be compiled with option --enable-ctype
 //
 // ----------------------------------------------------------------------------
 
 
-if (!defined('IMAGETYPE_GIF')) {
-    define('IMAGETYPE_GIF', 1);
-}
-if (!defined('IMAGETYPE_JPEG')) {
-    define('IMAGETYPE_JPEG', 2);
-}
-if (!defined('IMAGETYPE_PNG')) {
-    define('IMAGETYPE_PNG', 3);
-}
-if (!defined('IMAGETYPE_SWF')) {
-    define('IMAGETYPE_SWF', 4);
-}
-if (!defined('IMAGETYPE_PSD')) {
-    define('IMAGETYPE_PSD', 5);
-}
-if (!defined('IMAGETYPE_BMP')) {
-    define('IMAGETYPE_BMP', 6);
-}
-if (!defined('IMAGETYPE_TIFF_II')) {
-    define('IMAGETYPE_TIFF_II', 7);
-}
-if (!defined('IMAGETYPE_TIFF_MM')) {
-    define('IMAGETYPE_TIFF_MM', 8);
-}
-if (!defined('IMAGETYPE_JPC')) {
-    define('IMAGETYPE_JPC', 9);
-}
-if (!defined('IMAGETYPE_JP2')) {
-    define('IMAGETYPE_JP2', 10);
-}
-if (!defined('IMAGETYPE_JPX')) {
-    define('IMAGETYPE_JPX', 11);
-}
-if (!defined('IMAGETYPE_JB2')) {
-    define('IMAGETYPE_JB2', 12);
-}
-if (!defined('IMAGETYPE_SWC')) {
-    define('IMAGETYPE_SWC', 13);
-}
-if (!defined('IMAGETYPE_IFF')) {
-    define('IMAGETYPE_IFF', 14);
-}
-if (!defined('IMAGETYPE_WBMP')) {
-    define('IMAGETYPE_WBMP', 15);
-}
-if (!defined('IMAGETYPE_XBM7')) {
-    define('IMAGETYPE_XBM7', 16);
-}
-if (!defined('IMG_FLIP_HORIZONTAL')) {
-    define('IMG_FLIP_HORIZONTAL', 1);
-}
-if (!defined('IMG_FLIP_VERTICAL')) {
-    define('IMG_FLIP_VERTICAL', 2);
-}
-if (!defined('IMG_FLIP_BOTH')) {
-    define('IMG_FLIP_BOTH', IMG_FLIP_HORIZONTAL|IMG_FLIP_VERTICAL);
-}
-
-if (!function_exists('image_type_to_extension')) {
+if (!function_exists('ctype_alnum')) {
     /**
-     * Get file extension for image type
+     * Check for alphanumeric character(s)
      *
-     * @param   int     $imagetype
-     * @param   bool    $include_dot
-     * @return  string
-     * @since   PHP 5.2
-     * @see     http://php.net/manual/en/function.image-type-to-extension.php
+     * @param   string  $text
+     * @return  bool
+     * @since   PHP 4.0.4
+     * @see     http://php.net/manual/fr/function.ctype-alnum.php
      */
-    function image_type_to_extension($imagetype, $include_dot=true) {
-        $map = array (
-            IMAGETYPE_GIF     => 'gif',
-            IMAGETYPE_JPEG    => 'jpg',
-            IMAGETYPE_PNG     => 'png',
-            IMAGETYPE_SWF     => 'swf',
-            IMAGETYPE_PSD     => 'psd',
-            IMAGETYPE_BMP     => 'bmp',
-            IMAGETYPE_TIFF_II => 'tiff',
-            IMAGETYPE_TIFF_MM => 'tiff',
-            IMAGETYPE_JPC     => 'jpc',
-            IMAGETYPE_JP2     => 'jp2',
-            IMAGETYPE_JPX     => 'jpx',
-            IMAGETYPE_JB2     => 'jb2',
-            IMAGETYPE_SWC     => 'swc',
-            IMAGETYPE_IFF     => 'aiff',
-            IMAGETYPE_WBMP    => 'wbmp',
-            IMAGETYPE_XBM7    => 'xbm'
-        );
-        return isset($map[$imagetype]) ? ($include_dot?'.':'').$map[$imagetype] : false;
+    function ctype_alnum($text) {
+        if (is_int($text) && $text >= -128 && $text <= 255) {
+            if ($text < 0) {
+                $text += 256;
+            }
+            return ((int)preg_match('/^[[:alnum:]]+$/', chr($text)) > 0);
+        } elseif (is_int($text) || is_string($text)) {
+            return ((int)preg_match('/^[[:alnum:]]+$/', (string)$text) > 0);
+        } else {
+            return false;
+        }
     }
 }
 
-if (!function_exists('imageflip')) {
+if (!function_exists('ctype_alpha')) {
     /**
-     * Flips an image using a given mode
+     * Check for alphabetic character(s)
      *
-     * @param   resource    $image
-     * @param   int         $mode
+     * @param   string  $text
      * @return  bool
-     * @since   PHP 5.5.0
-     * @see     http://php.net/manual/en/function.imageflip.php
+     * @since   PHP 4.0.4
+     * @see     http://php.net/manual/en/function.ctype-alpha.php
      */
-    function imageflip(&$image, $mode) {
-        $w=imagesx($image);
-        $h=imagesy($image);
-        if (($mode&IMG_FLIP_HORIZONTAL) == IMG_FLIP_HORIZONTAL) {
-            for ($y=0; $y<$h; $y++) {
-                for ($x=0; $x<=floor($w/2); $x++) {
-                    $tmp = imagecolorat($image, $w-$x-1, $y);
-                    imagesetpixel($image, $w-$x, $y,imagecolorat($image, $x, $y));
-                    imagesetpixel($image, $x, $y, $tmp);
-                }
+    function ctype_alpha($text) {
+        if (is_int($text) && $text >= -128 && $text <= 255) {
+            if ($text < 0) {
+                $text += 256;
             }
+            return ((int)preg_match('/^[[:alpha:]]+$/', chr($text)) > 0);
+        } elseif (is_int($text) || is_string($text)) {
+            return ((int)preg_match('/^[[:alpha:]]+$/', (string)$text) > 0);
+        } else {
+            return false;
         }
-        if (($mode&IMG_FLIP_VERTICAL) == IMG_FLIP_VERTICAL) {
-            for ($x=0; $x<$w; $x++) {
-                for ($y=0; $y<=floor($h/2); $y++) {
-                    $tmp = imagecolorat($image, $x, $h-$y-1);
-                    imagesetpixel($image, $x, $h-$y, imagecolorat($image, $x, $y));
-                    imagesetpixel($image, $x, $y, $tmp);
-                }
+    }
+}
+
+if (!function_exists('ctype_cntrl')) {
+    /**
+     * Check for control character(s)
+     *
+     * @param   string  $text
+     * @return  bool
+     * @since   PHP 4.0.4
+     * @see     http://php.net/manual/en/function.ctype-cntrl.php
+     */
+    function ctype_cntrl($text) {
+        if (is_int($text) && $text >= -128 && $text <= 255) {
+            if ($text < 0) {
+                $text += 256;
             }
+            return (($text >= 0 && $text < 32) || $text == 127);
+        } elseif (is_int($text) || is_string($text)) {
+            return ((int)preg_match('/^[[:cntrl:]]+$/', (string)$text) > 0);
+        } else {
+            return false;
         }
-        return true;
+    }
+}
+
+if (!function_exists('ctype_digit')) {
+    /**
+     * Check for numeric character(s)
+     *
+     * @param   string  $text
+     * @return  bool
+     * @since   PHP 4.0.4
+     * @see     http://php.net/manual/en/function.ctype-digit.php
+     */
+    function ctype_digit($text) {
+        if (is_int($text) && $text >= -128 && $text <= 255) {
+            if ($text < 0) {
+                $text += 256;
+            }
+            return ($text >= ord('0') && $text <= ord('9'));
+        } elseif (is_int($text) || is_string($text)) {
+            return ((int)preg_match('/^[0-9]+$/', (string)$text) > 0);
+        } else {
+            return false;
+        }
+    }
+}
+
+if (!function_exists('ctype_graph')) {
+    /**
+     * Check for any printable character(s) except space
+     *
+     * @param   string  $text
+     * @return  bool
+     * @since   PHP 4.0.4
+     * @see     http://php.net/manual/en/function.ctype-graph.php
+     */
+    function ctype_graph($text) {
+        if (is_int($text) && $text >= -128 && $text <= 255) {
+            if ($text < 0) {
+                $text += 256;
+            }
+            return ($text >= 33 && $text <= 126);
+        } elseif (is_string($text) || is_int($text)) {
+            return ((int)preg_match('/^[[:alnum:][:punct:]]+$/', (string)$text) > 0);
+        } else {
+            return false;
+        }
+    }
+}
+
+if (!function_exists('ctype_lower')) {
+    /**
+     * Check for lowercase character(s)
+     *
+     * @param   string  $text
+     * @return  bool
+     * @since   PHP 4.0.4
+     * @see     http://php.net/manual/en/function.ctype-lower.php
+     */
+    function ctype_lower($text) {
+        if (is_int($text) && $text >= -128 && $text <= 255) {
+            if ($text < 0) {
+                $text += 256;
+            }
+            return ($text >= ord('a') && $text <= ord('z'));
+        } else {
+            return ((int)preg_match('/^[a-z]+$/', (string)$text) > 0);
+        }
+    }
+}
+
+if (!function_exists('ctype_print')) {
+    /**
+     * Check for printable character(s)
+     *
+     * @param   string  $text
+     * @return  bool
+     * @since   PHP 4.0.4
+     * @see     http://php.net/manual/en/function.ctype-print.php
+     */
+    function ctype_print($text) {
+        if (is_int($text) && $text >= -128 && $text <= 255) {
+            if ($text < 0) {
+                $text += 256;
+            }
+            return ($text >= 32 && $text <= 126);
+        } elseif (is_string($text) || is_int($text)) {
+            return ((int)preg_match('/^[[:print:]]+$/', (string)$text) > 0);
+        } else {
+            return false;
+        }
+    }
+}
+
+if (!function_exists('ctype_punct')) {
+    /**
+     * Check for any printable character which is not whitespace or an alphanumeric character
+     *
+     * @param   string  $text
+     * @return  bool
+     * @since   PHP 4.0.4
+     * @see     http://php.net/manual/en/function.ctype-punct.php
+     */
+    function ctype_punct($text) {
+        if (is_int($text) && $text >= -128 && $text <= 255) {
+            if ($text < 0) {
+                $text += 256;
+            }
+            return ((int)preg_match('/^[[:punct:]]+$/', chr($text)) > 0);
+        } elseif (is_string($text) || is_int($text)) {
+            return ((int)preg_match('/^[[:punct:]]+$/', (string)$text) > 0);
+        } else {
+            return false;
+        }
+    }
+}
+
+if (!function_exists('ctype_space')) {
+    /**
+     * Check for whitespace character(s)
+     *
+     * @param   string  $text
+     * @return  bool
+     * @since   PHP 4.0.4
+     * @see     http://php.net/manual/en/function.ctype-space.php
+     */
+    function ctype_space($text) {
+        if (is_int($text) && $text >= -128 && $text <= 255) {
+            if ($text < 0) {
+                $text += 256;
+            }
+            return $text==32 || ($text >=9 && $text <=13);
+        } else {
+            return ((int)preg_match('/^[\s\v]+$/', (string)$text) > 0);
+        }
+    }
+}
+
+if (!function_exists('ctype_upper')) {
+    /**
+     * Check for uppercase character(s)
+     *
+     * @param   string  $text
+     * @return  bool
+     * @since   PHP 4.0.4
+     * @see     http://php.net/manual/en/function.ctype-upper.php
+     */
+    function ctype_upper($text) {
+        if (is_int($text) && $text >= -128 && $text <= 255) {
+            if ($text < 0) {
+                $text += 256;
+            }
+            return ($text >= ord('A') && $text <= ord('Z'));
+        } else {
+            return ((int)preg_match('/^[A-Z]+$/', (string)$text) > 0);
+        }
+    }
+}
+
+if (!function_exists('ctype_xdigit')) {
+    /**
+     * Check for character(s) representing a hexadecimal digit
+     *
+     * @param   string  $text
+     * @return  bool
+     * @since   PHP 4.0.4
+     * @see     http://php.net/manual/en/function.ctype-xdigit.php
+     */
+    function ctype_xdigit($text) {
+        if (is_int($text) && $text >= -128 && $text <= 255) {
+            if ($text < 0) {
+                $text += 256;
+            }
+            return ((int)preg_match('/^[0-9A-Fa-f]+$/', chr($text)) > 0);
+        } elseif (is_string($text) || is_int($text)) {
+            return ((int)preg_match('/^[0-9A-Fa-f]+$/', (string)$text) > 0);
+        } else {
+            return false;
+        }
     }
 }
 
@@ -686,6 +810,140 @@ if (!function_exists('sys_get_temp_dir')) {
             || ($tmp_dir=ini_get('upload_tmp_dir')) != ''
             || ($tmp_dir=ini_get('session.save_path')) != '');
         return $tmp_dir;
+    }
+}
+
+
+// ----------------------------------------------------------------------------
+//
+// gd
+//
+// ----------------------------------------------------------------------------
+
+
+if (!defined('IMAGETYPE_GIF')) {
+    define('IMAGETYPE_GIF', 1);
+}
+if (!defined('IMAGETYPE_JPEG')) {
+    define('IMAGETYPE_JPEG', 2);
+}
+if (!defined('IMAGETYPE_PNG')) {
+    define('IMAGETYPE_PNG', 3);
+}
+if (!defined('IMAGETYPE_SWF')) {
+    define('IMAGETYPE_SWF', 4);
+}
+if (!defined('IMAGETYPE_PSD')) {
+    define('IMAGETYPE_PSD', 5);
+}
+if (!defined('IMAGETYPE_BMP')) {
+    define('IMAGETYPE_BMP', 6);
+}
+if (!defined('IMAGETYPE_TIFF_II')) {
+    define('IMAGETYPE_TIFF_II', 7);
+}
+if (!defined('IMAGETYPE_TIFF_MM')) {
+    define('IMAGETYPE_TIFF_MM', 8);
+}
+if (!defined('IMAGETYPE_JPC')) {
+    define('IMAGETYPE_JPC', 9);
+}
+if (!defined('IMAGETYPE_JP2')) {
+    define('IMAGETYPE_JP2', 10);
+}
+if (!defined('IMAGETYPE_JPX')) {
+    define('IMAGETYPE_JPX', 11);
+}
+if (!defined('IMAGETYPE_JB2')) {
+    define('IMAGETYPE_JB2', 12);
+}
+if (!defined('IMAGETYPE_SWC')) {
+    define('IMAGETYPE_SWC', 13);
+}
+if (!defined('IMAGETYPE_IFF')) {
+    define('IMAGETYPE_IFF', 14);
+}
+if (!defined('IMAGETYPE_WBMP')) {
+    define('IMAGETYPE_WBMP', 15);
+}
+if (!defined('IMAGETYPE_XBM7')) {
+    define('IMAGETYPE_XBM7', 16);
+}
+if (!defined('IMG_FLIP_HORIZONTAL')) {
+    define('IMG_FLIP_HORIZONTAL', 1);
+}
+if (!defined('IMG_FLIP_VERTICAL')) {
+    define('IMG_FLIP_VERTICAL', 2);
+}
+if (!defined('IMG_FLIP_BOTH')) {
+    define('IMG_FLIP_BOTH', IMG_FLIP_HORIZONTAL|IMG_FLIP_VERTICAL);
+}
+
+if (!function_exists('image_type_to_extension')) {
+    /**
+     * Get file extension for image type
+     *
+     * @param   int     $imagetype
+     * @param   bool    $include_dot
+     * @return  string
+     * @since   PHP 5.2
+     * @see     http://php.net/manual/en/function.image-type-to-extension.php
+     */
+    function image_type_to_extension($imagetype, $include_dot=true) {
+        $map = array (
+            IMAGETYPE_GIF     => 'gif',
+            IMAGETYPE_JPEG    => 'jpg',
+            IMAGETYPE_PNG     => 'png',
+            IMAGETYPE_SWF     => 'swf',
+            IMAGETYPE_PSD     => 'psd',
+            IMAGETYPE_BMP     => 'bmp',
+            IMAGETYPE_TIFF_II => 'tiff',
+            IMAGETYPE_TIFF_MM => 'tiff',
+            IMAGETYPE_JPC     => 'jpc',
+            IMAGETYPE_JP2     => 'jp2',
+            IMAGETYPE_JPX     => 'jpx',
+            IMAGETYPE_JB2     => 'jb2',
+            IMAGETYPE_SWC     => 'swc',
+            IMAGETYPE_IFF     => 'aiff',
+            IMAGETYPE_WBMP    => 'wbmp',
+            IMAGETYPE_XBM7    => 'xbm'
+        );
+        return isset($map[$imagetype]) ? ($include_dot?'.':'').$map[$imagetype] : false;
+    }
+}
+
+if (!function_exists('imageflip')) {
+    /**
+     * Flips an image using a given mode
+     *
+     * @param   resource    $image
+     * @param   int         $mode
+     * @return  bool
+     * @since   PHP 5.5.0
+     * @see     http://php.net/manual/en/function.imageflip.php
+     */
+    function imageflip(&$image, $mode) {
+        $w=imagesx($image);
+        $h=imagesy($image);
+        if (($mode&IMG_FLIP_HORIZONTAL) == IMG_FLIP_HORIZONTAL) {
+            for ($y=0; $y<$h; $y++) {
+                for ($x=0; $x<=floor($w/2); $x++) {
+                    $tmp = imagecolorat($image, $w-$x-1, $y);
+                    imagesetpixel($image, $w-$x, $y,imagecolorat($image, $x, $y));
+                    imagesetpixel($image, $x, $y, $tmp);
+                }
+            }
+        }
+        if (($mode&IMG_FLIP_VERTICAL) == IMG_FLIP_VERTICAL) {
+            for ($x=0; $x<$w; $x++) {
+                for ($y=0; $y<=floor($h/2); $y++) {
+                    $tmp = imagecolorat($image, $x, $h-$y-1);
+                    imagesetpixel($image, $x, $h-$y, imagecolorat($image, $x, $y));
+                    imagesetpixel($image, $x, $y, $tmp);
+                }
+            }
+        }
+        return true;
     }
 }
 
