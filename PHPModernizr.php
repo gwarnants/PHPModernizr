@@ -4,7 +4,7 @@
  * Makes most of last released built-in PHP functions works on old PHP versions.
  *
  * @author  Geoffray Warnants
- * @version 1.0.20130922
+ * @version 1.0.20130924
  * @see     https://github.com/gwarnants/PHPModernizr
  */
 
@@ -1074,6 +1074,52 @@ if (!function_exists('str_split')) {
             $split[] = substr($string, $i, $split_length);
         }
         return $split;
+    }
+}
+
+if (!function_exists('str_word_count')) {
+    /**
+     * Return information about words used in a string
+     *
+     * @param   string  $string
+     * @param   int     $format
+     * @param   string  $charlist
+     * @return  mixed
+     * @since   PHP 4.3.0
+     * @see     http://php.net/manual/en/function.str-word-count.php
+     */
+    function str_word_count($string, $format=0, $charlist='') {
+        if (!is_numeric($format)) {
+            trigger_error(__FUNCTION__.'() expects parameter 2 to be long, '.gettype($string).' given', E_USER_WARNING);
+            return;
+        } elseif (($format=(int)$format) < 0 || $format > 2 ) {
+            trigger_error(__FUNCTION__.'() Invalid format value '.$format, E_USER_WARNING);
+            return false;
+        }
+
+        $offset = 0;
+        if (($ltrim = preg_replace('/^[\'-]/', '', $string)) !== $string) {
+            $string = $ltrim;
+            $offset = 1;
+        }
+
+        if (preg_match_all('/[a-z-\''.preg_quote($charlist).']+/i', preg_replace('/[\'-]$/', '', $string), $match, ($format == 2) ? PREG_OFFSET_CAPTURE : PREG_PATTERN_ORDER) && isset($match[0])) {
+
+            if ($format == 0) {
+                return count($match[0]);
+            } elseif ($format == 1) {
+                return $match[0];
+            } else {
+                $result = array();
+                foreach ($match[0] as $v) {
+                    $result[$v[1]+$ltrim] = $v[0];
+                }
+                return $result;
+            }
+
+        } else {
+            return ($format==0) ? 0 : array();
+        }
     }
 }
 

@@ -49,6 +49,7 @@ Just include the library and get ready to use all theses brand-new functions reg
 - str_getcsv()
 - str_shuffle()
 - str_split()
+- str_word_count()
 - stream_resolve_include_path()
 - strpbrk()
 - substr_compare()
