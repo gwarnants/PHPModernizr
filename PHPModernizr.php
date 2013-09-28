@@ -4,7 +4,7 @@
  * Makes most of last released built-in PHP functions works on old PHP versions.
  *
  * @author  Geoffray Warnants
- * @version 1.0.20130924
+ * @version 1.0.20130928
  * @see     https://github.com/gwarnants/PHPModernizr
  */
 
@@ -1396,6 +1396,71 @@ if (!defined('UPLOAD_ERR_EXTENSION')) {
 /** @since PHP 4.0.2 */
 if (!defined('M_SQRTPI')) {
     define('M_SQRTPI', sqrt(M_PI));
+}
+
+/** @since PHP 4.3.0 */
+if (!defined('PATH_SEPARATOR')) {
+    define('PATH_SEPARATOR', (strtoupper(substr(PHP_OS, 0, 3)) == 'WIN') ? ';' : ':');
+}
+
+/** @since PHP 4.3.10 / 5.0.2 */
+if (!defined('PHP_EOL')) {
+    switch (strtoupper(substr(PHP_OS, 0, 3))) {
+        case 'WIN':
+            define('PHP_EOL', "\r\n"); break;
+        case 'DAR':
+            define('PHP_EOL', "\r"); break;
+        default:
+            define('PHP_EOL', "\n");
+    }
+}
+
+/** @since PHP 4.4.0 / 5.0.5  */
+if (!defined('PHP_INT_MAX')) {
+    if (is_int(9223372036854775807)) {  // 64bits
+        define('PHP_INT_MAX', 9223372036854775807);
+    } elseif (is_int(2147483647)) {   // 32bits
+        define('PHP_INT_MAX', 2147483647);
+    } else {    // 16 bits
+        define('PHP_INT_MAX', 32767);
+    }
+}
+
+/** @since PHP 4.2.0 */
+if (!defined('PHP_SAPI') && function_exists('php_sapi_name')) {
+    define('PHP_SAPI', php_sapi_name());
+}
+
+/** @since PHP 5.2.7 */
+if (!defined('PHP_MAJOR_VERSION')) {
+    $split = explode('.', PHP_VERSION, 1);
+    define('PHP_MAJOR_VERSION', (int)$split[0]);
+    unset($split);
+}
+
+/** @since PHP 5.2.7 */
+if (!defined('PHP_MINOR_VERSION')) {
+    $split = explode('.', PHP_VERSION, 2);
+    define('PHP_MINOR_VERSION', (int)$split[1]);
+    unset($split);
+}
+
+/** @since PHP 5.2.7 */
+if (!defined('PHP_RELEASE_VERSION')) {
+    $split = explode('.', PHP_VERSION, 3);
+    define('PHP_RELEASE_VERSION', (int)$split[2]);
+    unset($split);
+}
+
+/** @since PHP 5.2.7 */
+if (!defined('PHP_EXTRA_VERSION')) {
+    define('PHP_EXTRA_VERSION', (($p=strpos(PHP_VERSION, '-')) !== false) ? substr(PHP_VERSION, $p) : '');
+    unset($p);
+}
+
+/** @since PHP 5.2.7 */
+if (!defined('PHP_VERSION_ID')) {
+    define('PHP_VERSION_ID', (10000*PHP_MAJOR_VERSION + 100*PHP_MINOR_VERSION + PHP_RELEASE_VERSION));
 }
 
 /**
