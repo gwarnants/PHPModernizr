@@ -4,7 +4,7 @@
  * Makes most of last released built-in PHP functions works on old PHP versions.
  *
  * @author  Geoffray Warnants
- * @version 1.0.20130928
+ * @version 1.0.20130929
  * @see     https://github.com/gwarnants/PHPModernizr
  */
 
@@ -950,9 +950,119 @@ if (!function_exists('imageflip')) {
 
 // ----------------------------------------------------------------------------
 //
+// json
+//
+// ----------------------------------------------------------------------------
+
+
+if (!defined('JSON_HEX_TAG')) {
+    define('JSON_HEX_TAG', 1<<0);
+}
+if (!defined('JSON_HEX_AMP')) {
+    define('JSON_HEX_AMP', 1<<1);
+}
+if (!defined('JSON_HEX_APOS')) {
+    define('JSON_HEX_APOS', 1<<2);
+}
+if (!defined('JSON_HEX_QUOT')) {
+    define('JSON_HEX_QUOT', 1<<3);
+}
+if (!defined('JSON_FORCE_OBJECT')) {
+    define('JSON_FORCE_OBJECT', 1<<4);
+}
+if (!defined('JSON_NUMERIC_CHECK')) {
+    define('JSON_NUMERIC_CHECK', 1<<5);
+}
+if (!defined('JSON_UNESCAPED_SLASHES')) {
+    define('JSON_UNESCAPED_SLASHES', 1<<6);
+}
+if (!defined('JSON_PRETTY_PRINT')) {
+    define('JSON_PRETTY_PRINT', 1<<7);
+}
+if (!defined('JSON_UNESCAPED_UNICODE')) {
+    define('JSON_UNESCAPED_UNICODE', 1<<8);
+}
+if (!defined('JSON_PARTIAL_OUTPUT_ON_ERROR')) {
+    define('JSON_PARTIAL_OUTPUT_ON_ERROR', 1<<9);
+}
+if (!defined('JSON_OBJECT_AS_ARRAY')) {
+    define('JSON_OBJECT_AS_ARRAY', 1<<0);
+}
+if (!defined('JSON_BIGINT_AS_STRING')) {
+    define('JSON_BIGINT_AS_STRING', 1<<1);
+}
+
+if (!function_exists('json_encode')) {
+    /**
+     * Returns the JSON representation of a value
+     *
+     * @param   mixed   $value
+     * @param   int     $options
+     * @param   int     $depth
+     * @return  string
+     * @since   PHP 5.2.0
+     * @see     http://php.net/manual/en/function.json-encode.php
+     *
+     * @todo    use JSON_UNESCAPED_UNICODE
+     */
+    function json_encode($value, $options=0, $depth=512) {
+        if (is_string($value)) {
+
+            if (($options & JSON_NUMERIC_CHECK) == JSON_NUMERIC_CHECK && is_numeric($value)) {
+                return (string)(float)$value;
+            }
+
+            $replace = array();
+            if (($options & JSON_UNESCAPED_SLASHES) != JSON_UNESCAPED_SLASHES) {
+                $replace['\\'] = '\\\\';
+                $replace['/']  = '\/';
+            }
+            if (($options & JSON_HEX_TAG) == JSON_HEX_TAG) {
+                $replace['<'] = '\u003C';
+                $replace['>'] = '\u003E';
+            }
+            if (($options & JSON_HEX_AMP) == JSON_HEX_AMP) {
+                $replace['&'] = '\u0026';
+            }
+            if (($options & JSON_HEX_APOS) == JSON_HEX_APOS) {
+                $replace['\''] = '\u0027';
+            }
+            $replace['"']  = (($options & JSON_HEX_QUOT) == JSON_HEX_QUOT) ? '\u0022' : '\"';
+
+            return '"'.str_replace(array_keys($replace), array_values($replace), $value).'"';
+        } elseif (is_numeric($value)) {
+            return (string)$value;
+        } elseif (is_bool($value)) {
+            return ($value) ? 'true' : 'false';
+        } elseif ($value === null) {
+            return 'null';
+        } elseif (is_array($value) && array_keys($value)===range(0,count($value)-1) && ($options & JSON_FORCE_OBJECT) != JSON_FORCE_OBJECT) { // sequential array
+            $a = array();
+            foreach ($value as $v) {
+                $a[] = json_encode($v, $options, $depth);
+            }
+            return '['.implode(',', $a).']';
+        } elseif (is_object($value) || is_array($value)) { // object or non-sequential array
+            $a = array();
+            foreach ($value as $k => $v) {
+                $o = (($options & JSON_FORCE_OBJECT) == JSON_FORCE_OBJECT && !is_array($v)) ? $options^JSON_FORCE_OBJECT : $options;
+                $a[] = json_encode((string)$k, $o, $depth).':'.json_encode($v, $o, $depth);
+            }
+            return '{'.implode(',', $a).'}';
+        } else {
+            trigger_error('[json] (php_json_encode) type is unsupported, encoded as null', E_USER_WARNING);
+            return 'null';
+        }
+    }
+}
+
+
+// ----------------------------------------------------------------------------
+//
 // string
 //
 // ----------------------------------------------------------------------------
+
 
 if (!function_exists('hex2bin')) {
     /**
