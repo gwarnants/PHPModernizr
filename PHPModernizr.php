@@ -4,7 +4,7 @@
  * Makes most of last released built-in PHP functions works on old PHP versions.
  *
  * @author  Geoffray Warnants
- * @version 1.0.20130929
+ * @version 1.0.20131006
  * @see     https://github.com/gwarnants/PHPModernizr
  */
 
@@ -806,7 +806,7 @@ if (!function_exists('sys_get_temp_dir')) {
         (($tmp_dir=(empty($_ENV['TMP']) ? '' : $_ENV['TMP'])) != ''
             || ($tmp_dir=(empty($_ENV['TMPDIR']) ? '' : $_ENV['TMPDIR'])) != ''
             || ($tmp_dir=(empty($_ENV['TEMP']) ? '' : $_ENV['TEMP'])) != ''
-            || (preg_match('/^WIN/i', PHP_OS) && ($tmp_dir=(is_dir('C:\Windows\Temp')?'C:\Windows\Temp':'')) != '')
+            || (stripos(PHP_OS, 'WIN')===0 && ($tmp_dir=(is_dir('C:\Windows\Temp')?'C:\Windows\Temp':'')) != '')
             || ($tmp_dir=ini_get('upload_tmp_dir')) != ''
             || ($tmp_dir=ini_get('session.save_path')) != '');
         return $tmp_dir;
@@ -1105,7 +1105,7 @@ if (!function_exists('parse_ini_string')) {
      */
     function parse_ini_string($ini, $process_sections=false, $scanner_mode=INI_SCANNER_NORMAL) {
 
-        $prefix = substr(str_shuffle('abcdefghijklmnopqrstuvwxyz0123456789_'), 0, preg_match('/^WIN/i', PHP_OS) ? 3 : 8);
+        $prefix = substr(str_shuffle('abcdefghijklmnopqrstuvwxyz0123456789_'), 0, stripos(PHP_OS, 'WIN')===0 ? 3 : 8);
 
         if (($tempfile = tempnam(sys_get_temp_dir(), $prefix)) !== false) {
             if (($fd=fopen($tempfile, 'w')) !== false) {
@@ -1510,12 +1510,12 @@ if (!defined('M_SQRTPI')) {
 
 /** @since PHP 4.3.0 */
 if (!defined('PATH_SEPARATOR')) {
-    define('PATH_SEPARATOR', (strtoupper(substr(PHP_OS, 0, 3)) == 'WIN') ? ';' : ':');
+    define('PATH_SEPARATOR', (stripos(PHP_OS, 'WIN')===0) ? ';' : ':');
 }
 
 /** @since PHP 4.3.10 / 5.0.2 */
 if (!defined('PHP_EOL')) {
-    switch (strtoupper(substr(PHP_OS, 0, 3))) {
+    switch (stripos(PHP_OS, 'WIN')===0) {
         case 'WIN':
             define('PHP_EOL', "\r\n"); break;
         case 'DAR':
