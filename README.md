@@ -52,6 +52,7 @@ Just include the library and get ready to use all theses brand-new functions reg
 - str_split()
 - str_word_count()
 - stream_resolve_include_path()
+- stripos()
 - strpbrk()
 - substr_compare()
 - sys_get_temp_dir()

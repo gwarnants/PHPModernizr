@@ -4,7 +4,7 @@
  * Makes most of last released built-in PHP functions works on old PHP versions.
  *
  * @author  Geoffray Warnants
- * @version 1.0.20131006
+ * @version 1.0.20131104
  * @see     https://github.com/gwarnants/PHPModernizr
  */
 
@@ -364,7 +364,7 @@ if (!function_exists('array_walk_recursive')) {
             trigger_error(__FUNCTION__.'() expects at least 2 parameters, '.$num_args.' given', E_USER_WARNING);
             return;
         } elseif (!is_array($input)) {
-            trigger_error(__FUNCTION__.'() expects parameter 1 to be array, '.gettype($input).' given in', E_USER_WARNING);
+            trigger_error(__FUNCTION__.'() expects parameter 1 to be array, '.gettype($input).' given', E_USER_WARNING);
             return;
         } elseif (!is_callable($funcname)) {
             trigger_error(__FUNCTION__.'() parameter 2 to be a valid callback', E_USER_WARNING);
@@ -1233,6 +1233,41 @@ if (!function_exists('str_word_count')) {
     }
 }
 
+if (!function_exists('stripos')) {
+    /**
+     * Find the position of the first occurrence of a case-insensitive substring in a string
+     *
+     * @param   string  $haystack
+     * @param   string  $needle
+     * @param   int     $offset
+     * @return  int
+     * @since   PHP 5
+     * @see     http://php.net/manual/en/function.stripos.php
+     */
+    function stripos($haystack, $needle, $offset=0) {
+        if (($n=func_num_args()) < 2) {
+            trigger_error(__FUNCTION__.'() expects at least 2 parameters, '.$n.' given', E_USER_WARNING);
+            return;
+        }
+        if (!is_string($haystack)) {
+            trigger_error(__FUNCTION__.'() expects parameter 1 to be string, '.gettype($offset).' given', E_USER_WARNING);
+            return;
+        }
+        if (!is_string($needle) && !is_numeric($needle)) {
+            trigger_error(__FUNCTION__.'() needle is not a string or an integer', E_USER_WARNING);
+            return;
+        }
+        if (!is_numeric($offset)) {
+            trigger_error(__FUNCTION__.'() expects parameter 3 to be long, '.gettype($offset).' given', E_USER_WARNING);
+            return;
+        }
+        if ($needle != '' && preg_match('/'.preg_quote($needle).'/i', $haystack, $match, PREG_OFFSET_CAPTURE, $offset) > 0 && isset($match[0][1])) {
+            return $match[0][1];
+        }
+        return false;
+    }
+}
+
 if (!function_exists('strpbrk')) {
     /**
      * Search a string for any of a set of characters
@@ -1415,7 +1450,7 @@ if (!function_exists('mysqli_fetch_all') && extension_loaded('mysqli')) {
      */
     function mysqli_fetch_all($result, $resulttype=MYSQLI_NUM) {
         if (!is_object($result) || get_class($result) != 'mysqli_result') {
-            trigger_error(__FUNCTION__.'() expects parameter 1 to be mysqli_result, '.gettype($result).' given in', E_USER_WARNING);
+            trigger_error(__FUNCTION__.'() expects parameter 1 to be mysqli_result, '.gettype($result).' given', E_USER_WARNING);
             return;
         }
         $fetch = array();
