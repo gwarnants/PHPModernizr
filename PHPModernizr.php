@@ -27,21 +27,43 @@ if (!function_exists('array_column')) {
      * @since   PHP 5.5.0
      * @see     http://php.net/manual/en/function.array-column.php
      */
-    function array_column($input, $column_key, $index_key=null) {
+    function array_column($input, $column_key=null, $index_key=null) {
+        $argc = func_num_args();
+        if ($argc < 2) {
+            trigger_error(__FUNCTION__.'() expects at least 2 parameters, '.$argc.' given', E_USER_WARNING);
+            return null;
+        }
         if (!is_array($input)) {
-            trigger_error(__FUNCTION__.'() Argument #1 is not an array', E_USER_WARNING);
+            trigger_error(__FUNCTION__.'() expects parameter 1 to be array, ' . gettype($input) . ' given', E_USER_WARNING);
             return;
+        }
+        if (!is_numeric ($column_key)
+            && !is_string($column_key)
+            && $column_key !== null) {
+            trigger_error(__FUNCTION__.'() The index key should be either a string or an integer', E_USER_WARNING);
+            return false;
         }
         $array = array();
         foreach ($input as $k => $v) {
-            if ($index_key !== null && array_key_exists($index_key, $v)) {
-                $array[$v[$index_key]] = ($column_key===null) ? $v
-                                       : (isset($v[$column_key]) ? $v[$column_key]
-                                       : null);
-            } else {
-                $array[] = ($column_key===null) ? $v
-                         : (isset($v[$column_key]) ? $v[$column_key]
-                         : null);
+
+            if ($has_value = ($column_key === null)) {
+                $value = $v;
+            } elseif (is_array($v) && ($has_value = array_key_exists($column_key, $v))) {
+                $value = $v[$column_key];
+            }
+
+            if ($has_value) {
+
+                $index = null;
+                if ($index_key !== null && is_array($v) && array_key_exists($index_key, $v)) {
+                    $index = $v[$index_key];
+                }
+
+                if ($index === null) {
+                    $array[] = $value;
+                } else {
+                    $array[$index] = $value;
+                }
             }
         }
         return $array;
