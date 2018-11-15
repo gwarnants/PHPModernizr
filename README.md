@@ -42,6 +42,7 @@ Just include the library and get ready to use all theses brand-new functions reg
 - http_build_query()
 - image_type_to_extension()
 - imageflip()
+- intdiv()
 - json_encode()
 - lcfirst()
 - mysqli_fetch_all()

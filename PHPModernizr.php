@@ -4,7 +4,7 @@
  * Makes most of last released built-in PHP functions works on old PHP versions.
  *
  * @author  Geoffray Warnants
- * @version 1.0.20131104
+ * @version 1.0
  * @see     https://github.com/gwarnants/PHPModernizr
  */
 
@@ -1366,6 +1366,10 @@ if (!defined('E_USER_DEPRECATED')) {
     define('E_USER_DEPRECATED', 16384);
 }
 
+if (!class_exists('DivisionByZeroError')) {
+    class DivisionByZeroError extends Exception {}
+}
+
 
 // ----------------------------------------------------------------------------
 //
@@ -1630,16 +1634,49 @@ if (!defined('PHP_VERSION_ID')) {
     define('PHP_VERSION_ID', (10000*PHP_MAJOR_VERSION + 100*PHP_MINOR_VERSION + PHP_RELEASE_VERSION));
 }
 
-/**
- * Get the boolean value of a variable
- *
- * @param   mixed   $var
- * @return  bool
- * @since   PHP 5.5.0
- * @see     http://php.net/manual/en/function.boolval.php
- */
 if (!function_exists('boolval')) {
+    /**
+     * Get the boolean value of a variable
+     *
+     * @param   mixed   $var
+     * @return  bool
+     * @since   PHP 5.5.0
+     * @see     http://php.net/manual/en/function.boolval.php
+     */
     function boolval($var) {
         return (bool)$var;
+    }
+}
+
+if (!function_exists('intdiv')) {
+    /**
+     * Integer division
+     *
+     * @param   int $dividend
+     * @param   int $divisor
+     * @return  int
+     * @since   PHP 7.0.0
+     * @see     http://php.net/manual/en/function.intdiv.php
+     */
+    function intdiv($dividend , $divisor=null) {
+        $argc = func_num_args();
+        if ($argc < 2) {
+            trigger_error(__FUNCTION__.'() expects at least 2 parameters, ' . $argc . ' given', E_USER_WARNING);
+            return null;
+        }
+        if (!is_numeric($dividend)) {
+            trigger_error(__FUNCTION__.'() expects parameter 1 to be integer, ' . gettype($dividend) . ' given', E_USER_WARNING);
+            return;
+        }
+        if (!is_numeric($divisor) && $divisor !== null) {
+            trigger_error(__FUNCTION__.'() expects parameter 2 to be integer, ' . gettype($divisor) . ' given', E_USER_WARNING);
+            return;
+        }
+        if ($divisor == 0) {
+            throw new DivisionByZeroError('Division by zero');
+        }
+        $a = (int)$dividend;
+        $b = (int)$divisor;
+        return ($a - $a % $b) / $b;
     }
 }
